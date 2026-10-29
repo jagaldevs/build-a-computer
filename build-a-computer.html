@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build a Computer</title>
+<meta name="description" content="Drag the main parts of a computer into the case and learn what each one does. For Years 3–6.">
+<style>
+:root{
+  --ink:#1f2547;
+  --ink-soft:#4a5277;
+  --bg:#fff4df;
+  --yellow:#ffd23f;
+  --focus:#1d4ed8;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; min-height:100vh; overflow-x:hidden;
+  color:var(--ink); background-color:var(--bg);
+  background-image:radial-gradient(rgba(31,37,71,.09) 1.6px, transparent 1.8px);
+  background-size:24px 24px;
+  font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold","Varela Round","Nunito","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  font-size:19px; line-height:1.35;
+  -webkit-tap-highlight-color:transparent;
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3,p,ol,ul{margin:0}
+:focus-visible{outline:4px solid var(--focus); outline-offset:3px}
+
+/* ---------- Header ---------- */
+.topbar{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px 14px; padding:12px 16px 10px; max-width:1140px; margin:0 auto}
+.brand{display:flex; align-items:center; gap:10px}
+.brand svg{width:48px; height:48px; flex:none}
+.brand h1{font-size:clamp(24px,3.4vw,34px); font-weight:900; letter-spacing:.2px}
+.controls{display:flex; flex-wrap:wrap; align-items:center; gap:10px}
+.seg{display:flex; border:4px solid var(--ink); border-radius:999px; background:#fff; box-shadow:0 4px 0 var(--ink); overflow:hidden}
+.seg button{min-height:52px; padding:0 16px; border:0; background:none; font-weight:800; font-size:18px}
+.seg button + button{border-left:3px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--yellow)}
+.chip{display:inline-flex; align-items:center; gap:8px; min-height:60px; padding:0 16px; border:4px solid var(--ink); border-radius:999px; background:#fff; box-shadow:0 4px 0 var(--ink); font-weight:800; font-size:18px}
+.chip svg{width:26px; height:26px; flex:none}
+.chip[aria-pressed="true"]{background:#c9f5d8}
+.teacher{min-height:44px; padding:0 14px; border:3px solid var(--ink); border-radius:12px; background:#e6eafa; font-weight:700; font-size:16px; box-shadow:0 3px 0 var(--ink)}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:60px; padding:0 24px; border:4px solid var(--ink); border-radius:18px; background:#fff; box-shadow:0 5px 0 var(--ink); font-weight:900; font-size:21px; transition:transform .08s, box-shadow .08s}
+.btn.primary{background:var(--yellow)}
+.btn svg{width:26px; height:26px; flex:none}
+.btn:active,.chip:active,.teacher:active,.seg:active{transform:translateY(3px); box-shadow:0 1px 0 var(--ink)}
+
+/* ---------- Build screen ---------- */
+.build{display:grid; grid-template-columns:minmax(250px,5fr) minmax(0,6fr); gap:20px; align-items:start; max-width:1140px; margin:0 auto; padding:4px 16px 24px}
+.side{display:flex; flex-direction:column; gap:12px; min-width:0}
+.helper{display:flex; align-items:center; gap:12px; min-height:92px; padding:10px 14px; background:#fff; border:4px solid var(--ink); border-radius:22px; box-shadow:0 5px 0 var(--ink); transition:background-color .25s}
+.helper .bot{width:60px; height:60px; flex:none}
+.helper p{font-size:19px; font-weight:700}
+.helper.happy{background:#e3f8ec}
+.helper.oops{background:#ffe8d4}
+.helper.think{background:#eef1ff}
+.helper.nudge{animation:nudge .5s ease}
+.bot .eye{animation:blink 4s infinite; transform-box:fill-box; transform-origin:center}
+.trayhead{display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-top:2px}
+.trayhead h2{font-size:22px; font-weight:900}
+.count{font-weight:800; font-size:17px; color:var(--ink-soft)}
+.progress{height:16px; border:3px solid var(--ink); border-radius:999px; background:#fff; overflow:hidden}
+.progress span{display:block; height:100%; width:0; background:linear-gradient(90deg,#2fae66,#3b82f6,#8b5cf6,#ef4444); transition:width .5s ease}
+.trayhint{font-size:16px; font-weight:700; color:var(--ink-soft)}
+.tray{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding-top:6px}
+.tile{
+  position:relative; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:6px;
+  min-height:124px; padding:18px 8px 10px; border:4px solid var(--ink); border-radius:20px;
+  background:linear-gradient(var(--c) 0 12px, var(--t) 12px); box-shadow:0 5px 0 var(--ink);
+  touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;
+  transition:transform .15s, box-shadow .15s, opacity .2s;
+}
+.tile .art{display:block; width:100%; height:76px; pointer-events:none}
+.tile .tname{font-weight:900; font-size:18px; line-height:1.1; text-align:center; pointer-events:none}
+.tile:hover:not(:disabled){transform:translateY(-2px)}
+.tile.selected{transform:translateY(-5px); box-shadow:0 0 0 6px var(--yellow), 0 10px 0 var(--ink)}
+.tile.lifted .art{opacity:.2}
+.tile.placed{cursor:default; transform:none; box-shadow:0 2px 0 var(--ink); background:#eceef5; color:var(--ink-soft)}
+.tile.placed .art{opacity:.35; filter:grayscale(1)}
+.tile .tick{position:absolute; top:-12px; right:-10px; width:38px; height:38px; display:none; place-items:center; background:#2fae66; border:3px solid var(--ink); border-radius:50%}
+.tile .tick svg{width:24px; height:24px}
+.tile.placed .tick{display:grid}
+.tile .badge{position:absolute; top:-14px; right:-8px; padding:2px 9px; background:var(--yellow); border:3px solid var(--ink); border-radius:12px; font-size:15px; font-weight:900; transform:rotate(6deg); animation:bob 1.6s ease-in-out infinite; pointer-events:none}
+.tile.placed .badge{display:none}
+.shake{animation:shake .45s ease}
+
+/* Case */
+.caseArea{display:flex; justify-content:center; min-width:0}
+.pccase{position:relative; width:min(100%, max(300px, calc((100vh - 110px) * .8696))); aspect-ratio:400/460; container-type:inline-size; transition:filter .8s}
+.pccase .shell{position:absolute; inset:0; width:100%; height:100%; display:block}
+.slots{position:absolute; inset:0}
+.slot{
+  position:absolute; display:flex; align-items:center; justify-content:center; padding:0; margin:0;
+  border:4px dashed var(--yellow); border-radius:12px; background:rgba(255,255,255,.07); color:#fff;
+  user-select:none; -webkit-user-select:none; touch-action:manipulation; z-index:2;
+  transition:background-color .2s, transform .2s;
+}
+.slot::after{content:""; position:absolute; inset:-10px; border-radius:inherit}
+.slot.round{border-radius:50%}
+.slot-mobo{z-index:1}
+.slot:hover{background:rgba(255,210,63,.18)}
+.slotLabel{font-weight:900; font-size:16px; font-size:clamp(12px,3.7cqw,19px); line-height:1.05; text-align:center; text-shadow:0 2px 0 var(--ink),0 0 6px var(--ink); pointer-events:none; padding:2px}
+.slot-mobo .slotLabel{font-size:clamp(15px,5cqw,26px)}
+body.challenge .slotLabel{display:none}
+body.dragging .slot:not(.filled), body.picking .slot:not(.filled){animation:breathe 1.2s ease-in-out infinite}
+.slot.hot, body.dragging .slot.hot{animation:none; background:rgba(255,210,63,.45); border-style:solid; transform:scale(1.04)}
+body .slots .slot.appear{animation:popIn .5s cubic-bezier(.3,1.6,.5,1) both}
+.slot.filled{border:0; background:none; cursor:default; pointer-events:none; animation:none}
+.slot.filled::after{display:none}
+.slot.filled svg{width:100%; height:100%; display:block; animation:snapIn .55s cubic-bezier(.3,1.7,.5,1)}
+.partsvg{overflow:visible}
+.art svg{display:block; width:100%; height:100%}
+.ol{stroke:#1f2547; stroke-width:3.5px; vector-effect:non-scaling-stroke}
+.machine{width:100%}
+.machine button{flex:1 1 0; display:inline-flex; align-items:center; justify-content:center; gap:8px; font-size:19px}
+.machine svg{width:26px; height:26px; flex:none}
+.lidScreen{position:absolute; left:11.5%; top:4.78%; width:77%; height:25.22%; padding:4px; border-radius:8px; z-index:3}
+.lidScreen .boot svg{width:30px; height:30px}
+.lidScreen .boot p{margin:2px 0 6px; font-size:clamp(12px,3.6cqw,18px)}
+.lidScreen .bar{height:12px}
+.lidScreen .hello svg{width:clamp(24px,8cqw,42px); height:auto}
+.lidScreen .hi{font-size:clamp(17px,6.2cqw,30px)}
+.lidScreen .hello p{font-size:clamp(12px,3.5cqw,18px)}
+.pccase.powered .charge{fill:#4ade80}
+
+/* Ghost while dragging */
+.ghost{position:fixed; left:0; top:0; z-index:1000; pointer-events:none; filter:drop-shadow(0 10px 8px rgba(31,37,71,.35)); will-change:transform}
+.ghost svg{display:block; width:100%; height:100%}
+body.dragging, body.dragging *{cursor:grabbing !important}
+
+/* Powered-on effects */
+.blades{transform-origin:50px 50px}
+.psuFan{transform-origin:52px 46px}
+.pccase.powered{filter:drop-shadow(0 0 22px rgba(255,210,63,.65))}
+.pccase.powered .interior{fill:#5b67a8; transition:fill .8s}
+.pccase.powered .caseLed{fill:#4ade80}
+.pccase.powered .blades{animation:spin .45s linear infinite}
+.pccase.powered .psuFan{animation:spin .6s linear infinite}
+.pccase.powered .led{fill:#4ade80; animation:glow 1.2s ease-in-out infinite alternate}
+.pccase.powered .blink{fill:#fbbf24; animation:glow .35s steps(2) infinite}
+.pccase.powered .rgb{animation:rgb 1.8s linear infinite}
+
+/* Power + monitor panels */
+.panelBox{display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px; text-align:center; background:#fff; border:4px solid var(--ink); border-radius:24px; box-shadow:0 5px 0 var(--ink)}
+.panelBox h2{font-size:26px; font-weight:900}
+.panelBox label{font-weight:800}
+.panelBox input{width:100%; max-width:300px; min-height:60px; padding:0 16px; border:4px solid var(--ink); border-radius:16px; background:#fffbea; font-size:22px; font-weight:700; text-align:center}
+.powerBtn{display:grid; place-items:center; width:140px; height:140px; border-radius:50%; border:6px solid var(--ink); background:radial-gradient(circle at 35% 30%, #ff9a9a, #ef4444 62%); box-shadow:0 8px 0 var(--ink); animation:pulse 1.6s infinite}
+.powerBtn svg{width:72px; height:72px}
+.powerBtn:active{transform:translateY(5px); box-shadow:0 3px 0 var(--ink)}
+.powerTip{font-size:20px; font-weight:900}
+.monitor{position:relative; width:min(100%,340px); aspect-ratio:16/11; margin:0 auto 46px; padding:12px; background:#2b3160; border:5px solid var(--ink); border-radius:20px; box-shadow:0 6px 0 var(--ink)}
+.monitor::before{content:""; position:absolute; left:50%; bottom:-36px; width:38px; height:32px; transform:translateX(-50%); background:#2b3160; border:5px solid var(--ink); border-top:0}
+.monitor::after{content:""; position:absolute; left:50%; bottom:-50px; width:140px; height:16px; transform:translateX(-50%); background:#2b3160; border:5px solid var(--ink); border-radius:10px}
+.screen{display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%; padding:10px; overflow:hidden; text-align:center; color:#fff; background:#0f1b3d; border:4px solid var(--ink); border-radius:10px}
+.boot p{font-weight:800; margin:6px 0 10px}
+.boot svg{width:54px; height:54px}
+.bar{width:180px; max-width:80%; height:16px; margin:0 auto; border:3px solid #fff; border-radius:999px; overflow:hidden}
+.bar i{display:block; height:100%; width:0; background:var(--yellow); animation:load 1.8s ease-in-out forwards}
+.hello svg{width:64px; height:64px; animation:popIn .6s cubic-bezier(.3,1.6,.5,1) both}
+.hello .hi{font-size:clamp(24px,4vw,34px); font-weight:900; color:var(--yellow); overflow-wrap:anywhere}
+.hello p{font-weight:800}
+
+/* ---------- Finish + quiz ---------- */
+.view{max-width:1000px; margin:0 auto; padding:6px 16px 28px}
+.panel{padding:clamp(16px,3vw,28px); background:#fff; border:4px solid var(--ink); border-radius:26px; box-shadow:0 6px 0 var(--ink)}
+.panel h2{font-size:clamp(26px,4vw,36px); font-weight:900; text-align:center}
+.panel h2:focus{outline:none}
+.lead{margin-top:6px; text-align:center; font-size:20px; font-weight:700; color:var(--ink-soft)}
+.finishGrid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:20px 0 22px}
+.fcard{display:flex; flex-direction:column; align-items:center; gap:6px; min-height:60px; padding:18px 10px 14px; text-align:center; border:4px solid var(--ink); border-radius:20px; background:linear-gradient(var(--c) 0 12px, var(--t) 12px); box-shadow:0 5px 0 var(--ink); transition:transform .12s}
+.fcard:hover{transform:translateY(-3px)}
+.fcard .art{display:block; width:100%; height:86px}
+.fcard strong{font-size:20px; font-weight:900}
+.fcard .tag{font-size:16px; font-weight:700; color:var(--ink-soft)}
+.actions{display:flex; flex-wrap:wrap; justify-content:center; gap:14px}
+.qtop{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:16px}
+.qcount{font-size:18px; font-weight:900; color:var(--ink-soft)}
+.dots{display:flex; gap:8px}
+.dots i{width:20px; height:20px; border:3px solid var(--ink); border-radius:50%; background:#fff}
+.dots i.now{background:var(--yellow)}
+.dots i.done{background:#2fae66}
+.qrow{display:flex; align-items:center; justify-content:center; gap:14px}
+.speak{display:grid; place-items:center; flex:none; width:60px; height:60px; border:4px solid var(--ink); border-radius:50%; background:#e6eafa; box-shadow:0 4px 0 var(--ink)}
+.speak svg{width:28px; height:28px}
+.speak[aria-pressed="true"]{background:var(--yellow)}
+.answers{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:22px 0 12px}
+.ans{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-height:170px; padding:16px 8px; border:4px solid var(--ink); border-radius:22px; background:#fff; box-shadow:0 5px 0 var(--ink); transition:transform .12s, opacity .2s}
+.ans:hover:not(:disabled){transform:translateY(-3px)}
+.ans .art{display:block; width:100%; height:104px}
+.ans .aname{font-size:19px; font-weight:900}
+body.challenge .ans .aname{display:none}
+.ans.right{background:#d9f7e5; box-shadow:0 0 0 6px #2fae66, 0 5px 0 var(--ink); animation:snapIn .5s cubic-bezier(.3,1.7,.5,1)}
+.ans.nope{opacity:.45}
+.ans:disabled{cursor:default}
+.feedback{min-height:58px; padding:6px 0; text-align:center; font-size:21px; font-weight:800}
+.feedback.good{color:#16794a}
+.feedback.try{color:#a4480b}
+.results{text-align:center}
+.stars{display:flex; justify-content:center; gap:12px; margin:4px 0 16px}
+.stars svg{width:clamp(72px,14vw,112px); height:auto; animation:starPop .6s cubic-bezier(.3,1.7,.5,1) both}
+.stars .on path{fill:var(--yellow)}
+.stars .off path{fill:#e3e6f0}
+.results p{margin:8px 0 20px; font-size:21px; font-weight:700}
+
+/* ---------- Dialogs ---------- */
+dialog.card{width:min(580px, calc(100vw - 24px)); max-height:calc(100vh - 24px); padding:0; overflow:auto; color:var(--ink); background:#fff; border:5px solid var(--ink); border-radius:26px; box-shadow:0 8px 0 var(--ink)}
+dialog.card[open]{animation:cardIn .4s cubic-bezier(.3,1.5,.5,1)}
+dialog::backdrop{background:rgba(31,37,71,.55)}
+.cardHead{display:flex; align-items:center; gap:16px; padding:18px 20px; background:var(--t,#eef1ff); border-top:14px solid var(--c,#8b5cf6); border-bottom:4px solid var(--ink)}
+.cardHead .art{display:block; width:112px; height:96px; flex:none}
+.kicker{font-size:17px; font-weight:800; color:var(--ink-soft)}
+.cardHead h2{font-size:clamp(28px,5vw,38px); font-weight:900; line-height:1.05}
+.cardBody{display:flex; flex-direction:column; gap:12px; padding:18px 20px 6px}
+.job{font-size:21px; font-weight:800}
+.fact{display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:#f5f6fc; border:3px solid var(--ink); border-radius:16px}
+.fact svg{width:40px; height:40px; flex:none}
+.fact h3{font-size:16px; font-weight:900; letter-spacing:.6px; text-transform:uppercase; color:var(--ink-soft)}
+.fact p{font-size:19px; font-weight:600}
+.cardFoot{display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding:16px 20px 20px}
+.cardFoot .btn{flex:1 1 180px}
+.tbody{display:flex; flex-direction:column; gap:14px; padding:18px 22px 6px; font-size:18px}
+.tbody h3{font-size:18px; font-weight:900}
+.tbody ol,.tbody ul{padding-left:24px; display:flex; flex-direction:column; gap:6px}
+.code{display:inline-block; padding:1px 8px; background:var(--yellow); border:2px solid var(--ink); border-radius:8px; font-weight:900}
+.thead{border-top-color:#4a5488; background:#eef1ff}
+
+#confetti{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:3000; display:none}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ---------- Animations ---------- */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes nudge{0%,100%{transform:none}30%{transform:scale(1.03)}60%{transform:scale(.99)}}
+@keyframes bob{0%,100%{transform:rotate(6deg) translateY(0)}50%{transform:rotate(6deg) translateY(-4px)}}
+@keyframes breathe{0%,100%{background-color:rgba(255,210,63,.05)}50%{background-color:rgba(255,210,63,.28)}}
+@keyframes popIn{0%{transform:scale(.3); opacity:0}100%{transform:scale(1); opacity:1}}
+@keyframes snapIn{0%{transform:scale(.82)}55%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes cardIn{0%{transform:translateY(30px) scale(.9); opacity:0}100%{transform:none; opacity:1}}
+@keyframes starPop{0%{transform:scale(0) rotate(-40deg); opacity:0}100%{transform:none; opacity:1}}
+@keyframes load{to{width:100%}}
+@keyframes glow{from{opacity:1}to{opacity:.45}}
+@keyframes rgb{0%{fill:#f472b6}33%{fill:#60a5fa}66%{fill:#4ade80}100%{fill:#f472b6}}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+@keyframes pulse{0%{box-shadow:0 8px 0 var(--ink),0 0 0 0 rgba(239,68,68,.55)}70%{box-shadow:0 8px 0 var(--ink),0 0 0 24px rgba(239,68,68,0)}100%{box-shadow:0 8px 0 var(--ink),0 0 0 0 rgba(239,68,68,0)}}
+
+/* ---------- Responsive ---------- */
+@media (max-width:820px){
+  .build{grid-template-columns:minmax(220px,4fr) minmax(0,6fr); gap:14px}
+  .tile{min-height:112px}
+  .tile .art{height:64px}
+  .tile .tname{font-size:16px}
+  .helper p{font-size:17px}
+}
+@media (max-width:600px){
+  .build{grid-template-columns:1fr}
+  .tray{grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+  .pccase{width:min(100%,460px)}
+  .finishGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .answers{gap:10px}
+  .ans{min-height:140px}
+  .ans .art{height:80px}
+  .cardHead .art{width:84px; height:72px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; animation-delay:0s !important; transition-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+<noscript><p style="padding:20px;font-weight:800">This game needs JavaScript turned on.</p></noscript>
+
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="9" y="9" width="30" height="30" rx="7" fill="#8b5cf6" stroke="#1f2547" stroke-width="3.5"/><rect x="17" y="17" width="14" height="14" rx="3" fill="#ffd23f" stroke="#1f2547" stroke-width="3"/><path d="M17 3v6M24 3v6M31 3v6M17 39v6M24 39v6M31 39v6M3 17h6M3 24h6M3 31h6M39 17h6M39 24h6M39 31h6" stroke="#1f2547" stroke-width="3.5" stroke-linecap="round"/></svg>
+    <h1>Build a Computer</h1>
+  </div>
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Level">
+      <button type="button" id="modeEasy" aria-pressed="true">Easy</button>
+      <button type="button" id="modeChallenge" aria-pressed="false">Challenge</button>
+    </div>
+    <button type="button" class="chip" id="soundBtn" aria-pressed="false"></button>
+    <button type="button" class="teacher" id="teacherBtn">Teacher</button>
+  </div>
+</header>
+
+<!-- BUILD -->
+<main id="buildView" class="build">
+  <section class="side" aria-label="Parts tray">
+    <div class="seg machine" role="group" aria-label="Choose a computer to build">
+      <button type="button" id="pickDesktop" aria-pressed="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M9 20h6M12 16v4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        Desktop
+      </button>
+      <button type="button" id="pickLaptop" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M2.5 18.5h19" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        Laptop
+      </button>
+    </div>
+    <div class="helper" id="helper">
+      <svg class="bot" viewBox="0 0 60 60" aria-hidden="true">
+        <line x1="30" y1="5" x2="30" y2="15" stroke="#1f2547" stroke-width="3"/>
+        <circle cx="30" cy="6" r="4.5" fill="#ef4444" stroke="#1f2547" stroke-width="2.5"/>
+        <rect x="3" y="27" width="7" height="13" rx="3" fill="#8b5cf6" stroke="#1f2547" stroke-width="2.5"/>
+        <rect x="50" y="27" width="7" height="13" rx="3" fill="#8b5cf6" stroke="#1f2547" stroke-width="2.5"/>
+        <rect x="8" y="15" width="44" height="38" rx="12" fill="#ffd23f" stroke="#1f2547" stroke-width="3.5"/>
+        <rect x="14" y="22" width="32" height="20" rx="8" fill="#fff" stroke="#1f2547" stroke-width="2.5"/>
+        <circle class="eye" cx="23" cy="32" r="3.6" fill="#1f2547"/>
+        <circle class="eye" cx="37" cy="32" r="3.6" fill="#1f2547"/>
+        <path d="M24 46.5q6 4 12 0" fill="none" stroke="#1f2547" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <p id="helperText" aria-live="polite"></p>
+    </div>
+    <div class="trayhead">
+      <h2>Parts tray</h2>
+      <span class="count" id="countText">0 of 6 parts in</span>
+    </div>
+    <div class="progress" role="progressbar" aria-label="Parts in the case" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0"><span id="progressBar"></span></div>
+    <p class="trayhint" id="trayHint">Drag a part into the case. Or tap a part, then tap its spot.</p>
+    <div class="tray" id="tray"></div>
+
+    <div class="panelBox" id="powerPanel" hidden>
+      <h2>All parts are in!</h2>
+      <label for="nameInput">Your name (you can skip this)</label>
+      <input id="nameInput" maxlength="20" autocomplete="off" spellcheck="false">
+      <button type="button" class="powerBtn" id="powerBtn" aria-label="Turn the computer on">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 7v16" stroke="#fff" stroke-width="6" stroke-linecap="round"/><path d="M14.5 13a15 15 0 1 0 19 0" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/></svg>
+      </button>
+      <p class="powerTip">Press the power button!</p>
+    </div>
+
+    <div class="panelBox" id="monitorPanel" hidden>
+      <div class="monitor" id="monitorEl"><div class="screen" id="screen" aria-live="polite"></div></div>
+      <p class="powerTip" id="lookTip" hidden>Look at the laptop screen!</p>
+      <button type="button" class="btn primary" id="toFinishBtn" hidden>What did I build?
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <section class="caseArea" aria-label="Computer case">
+    <div class="pccase" id="pcCase">
+      <svg class="shell shell-desktop" viewBox="0 0 400 460" aria-hidden="true">
+        <rect x="16" y="18" width="378" height="436" rx="26" fill="#1f2547" opacity=".16"/>
+        <rect x="40" y="440" width="54" height="16" rx="6" fill="#1f2547"/>
+        <rect x="300" y="440" width="54" height="16" rx="6" fill="#1f2547"/>
+        <rect x="6" y="6" width="380" height="440" rx="26" fill="#dfe4f5" stroke="#1f2547" stroke-width="5"/>
+        <rect class="interior" x="24" y="24" width="348" height="408" rx="16" fill="#4a5488" stroke="#1f2547" stroke-width="4"/>
+        <g fill="none" stroke="#3a4374" stroke-width="3"><circle cx="326" cy="96" r="38"/><circle cx="326" cy="96" r="25"/><circle cx="326" cy="96" r="12"/><path d="M288 96h76M326 58v76"/></g>
+        <rect x="276" y="166" width="14" height="44" rx="7" fill="#2c3462"/>
+        <rect x="276" y="220" width="14" height="44" rx="7" fill="#2c3462"/>
+        <rect x="278" y="278" width="92" height="76" rx="10" fill="#3f4979" stroke="#2c3462" stroke-width="3"/>
+        <g stroke="#2c3462" stroke-width="6" stroke-linecap="round"><path d="M292 378h64M292 396h64M292 414h64"/></g>
+        <circle class="caseLed" cx="356" cy="15" r="5" fill="#9aa3c7" stroke="#1f2547" stroke-width="2"/>
+      </svg>
+      <svg class="shell shell-laptop" viewBox="0 0 400 460" aria-hidden="true" hidden>
+        <rect x="16" y="172" width="378" height="284" rx="26" fill="#1f2547" opacity=".16"/>
+        <rect x="30" y="8" width="340" height="146" rx="18" fill="#dfe4f5" stroke="#1f2547" stroke-width="5"/>
+        <rect x="46" y="22" width="308" height="116" rx="8" fill="#1b2347" stroke="#1f2547" stroke-width="3"/>
+        <path d="M64 36h40M64 47h22" stroke="#2e3866" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="200" cy="15" r="3" fill="#1f2547"/>
+        <rect x="8" y="160" width="384" height="292" rx="24" fill="#dfe4f5" stroke="#1f2547" stroke-width="5"/>
+        <rect x="70" y="146" width="260" height="16" rx="6" fill="#b8c0d8" stroke="#1f2547" stroke-width="3"/>
+        <rect class="interior" x="22" y="174" width="356" height="264" rx="14" fill="#4a5488" stroke="#1f2547" stroke-width="4"/>
+        <path d="M246 198H300" stroke="#d97706" stroke-width="7" stroke-linecap="round"/>
+        <g stroke="#2c3462" stroke-width="4" stroke-linecap="round"><path d="M362 206h8M362 218h8M362 230h8M362 242h8M362 254h8"/></g>
+        <g fill="#9aa3c7" stroke="#1f2547" stroke-width="2"><circle cx="15" cy="167" r="3.5"/><circle cx="385" cy="167" r="3.5"/><circle cx="15" cy="445" r="3.5"/><circle cx="385" cy="445" r="3.5"/></g>
+        <circle class="caseLed" cx="200" cy="154" r="4.5" fill="#9aa3c7" stroke="#1f2547" stroke-width="2"/>
+      </svg>
+      <div class="screen lidScreen" id="lidScreen" aria-live="polite" hidden></div>
+      <div class="slots" id="slots"></div>
+    </div>
+  </section>
+</main>
+
+<!-- FINISH -->
+<main id="finishView" class="view" hidden>
+  <div class="panel">
+    <h2 id="finishTitle" tabindex="-1">You built a computer!</h2>
+    <p class="lead">Here are the 6 parts you put in. Tap a part to read about it again.</p>
+    <div class="finishGrid" id="finishGrid"></div>
+    <div class="actions">
+      <button type="button" class="btn" id="againBtn">Build again</button>
+      <button type="button" class="btn" id="otherBtn"></button>
+      <button type="button" class="btn primary" id="quizBtn">Quiz time!</button>
+    </div>
+  </div>
+</main>
+
+<!-- QUIZ -->
+<main id="quizView" class="view" hidden>
+  <div class="panel" id="quizCard">
+    <div class="qtop">
+      <span class="qcount" id="qCount"></span>
+      <div class="dots" id="qDots" aria-hidden="true"></div>
+    </div>
+    <div class="qrow">
+      <h2 id="qText" tabindex="-1"></h2>
+      <button type="button" class="speak" id="qRead" aria-pressed="false" aria-label="Read the question aloud"></button>
+    </div>
+    <div class="answers" id="answers"></div>
+    <p class="feedback" id="qFeedback" aria-live="polite"></p>
+    <div class="actions"><button type="button" class="btn primary" id="nextQ" hidden>Next question</button></div>
+  </div>
+  <div class="panel results" id="results" hidden>
+    <div class="stars" id="stars" role="img"></div>
+    <h2 id="resultTitle" tabindex="-1"></h2>
+    <p id="resultText"></p>
+    <div class="actions">
+      <button type="button" class="btn" id="quizAgainBtn">Quiz again</button>
+      <button type="button" class="btn primary" id="buildAgainBtn">Build again</button>
+    </div>
+  </div>
+</main>
+
+<!-- FACT CARD -->
+<dialog class="card" id="factCard" aria-labelledby="factTitle">
+  <div class="cardHead">
+    <span class="art" id="factArt"></span>
+    <div>
+      <p class="kicker" id="factKicker"></p>
+      <h2 id="factTitle"></h2>
+    </div>
+  </div>
+  <div class="cardBody">
+    <p class="job" id="factJob"></p>
+    <div class="fact">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="17" r="11" fill="#ffd23f" stroke="#1f2547" stroke-width="3"/><path d="M15 29h10M16 34h8" stroke="#1f2547" stroke-width="3" stroke-linecap="round"/><path d="M17 17l3 3 3-3" fill="none" stroke="#1f2547" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><h3>It's like…</h3><p id="factLike"></p></div>
+    </div>
+    <div class="fact">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3l5 11 12 1.2-9 8 2.7 11.8L20 29l-10.7 6 2.7-11.8-9-8L15 14z" fill="#f472b6" stroke="#1f2547" stroke-width="3" stroke-linejoin="round"/></svg>
+      <div><h3>Fun fact!</h3><p id="factFun"></p></div>
+    </div>
+  </div>
+  <div class="cardFoot">
+    <button type="button" class="btn" id="readBtn" aria-pressed="false"></button>
+    <button type="button" class="btn primary" id="gotItBtn">Got it!</button>
+  </div>
+</dialog>
+
+<!-- TEACHER -->
+<dialog class="card" id="teacherCard" aria-labelledby="teacherTitle">
+  <div class="cardHead thead">
+    <div>
+      <p class="kicker">For teachers</p>
+      <h2 id="teacherTitle">Teacher notes</h2>
+    </div>
+  </div>
+  <div class="tbody">
+    <div>
+      <h3>Learning goal</h3>
+      <p>Students name the main parts inside a computer and explain what each part does, using everyday comparisons.</p>
+    </div>
+    <div>
+      <h3>Curriculum link</h3>
+      <p>Australian Curriculum v9 · Digital Technologies · Years 5–6</p>
+      <p><span class="code">AC9TDI6K01</span> Investigate the main internal components of common digital systems and their function.</p>
+      <p>Also works as an introduction for Years 3–4.</p>
+    </div>
+    <div>
+      <h3>Class discussion questions</h3>
+      <ol>
+        <li>Why does a computer need both RAM and storage? What would happen if it only had RAM?</li>
+        <li>Which computer part is most like a part of your body? Why do you think so?</li>
+        <li>A laptop has a battery, but a desktop computer has a power supply. Why do you think that is? What about tablets and phones?</li>
+      </ol>
+    </div>
+    <div>
+      <h3>How it works</h3>
+      <ul>
+        <li>Choose <strong>Desktop</strong> or <strong>Laptop</strong> above the tray. The laptop has smaller, flatter parts and a battery instead of a power supply. Building both is a good way to compare.</li>
+        <li><strong>Easy</strong> shows the part names on the slots. <strong>Challenge</strong> hides them, so students use the shapes. Challenge also hides names in the quiz.</li>
+        <li>Students can drag parts, or tap a part and then tap a slot. Keyboard works too (Tab, then Enter).</li>
+        <li>The quiz has no timer. Stars count answers right on the first try.</li>
+        <li>Nothing is saved or sent anywhere. Sound is off until a student turns it on.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="cardFoot">
+    <button type="button" class="btn primary" id="teacherClose">Close</button>
+  </div>
+</dialog>
+
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+(() => {
+'use strict';
+
+const INK = '#1f2547';
+const motionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches:false };
+const rm = () => motionQuery.matches;
+const range = (n, f) => Array.from({ length:n }, (_, i) => f(i)).join('');
+
+/* ---------- Content ---------- */
+const DESKTOP = [
+  { id:'mobo', name:'Motherboard', the:'the motherboard', label:'Motherboard', colour:'#2fae66', tint:'#dcf5e6',
+    slot:{ x:36, y:36, w:230, h:280 }, shape:'big rectangle space',
+    tag:'The city where all the parts live and talk',
+    job:'The motherboard is like a city. All the parts live on it and talk to each other.',
+    like:'It is like the roads in a town. Messages zoom along tiny paths from part to part.',
+    fun:'The thin lines on a motherboard are made of copper. Messages race along them super fast!',
+    hint:'Not quite! The motherboard is the biggest part. Look for the big space at the back of the case.',
+    q:'Which part is the city where all the parts live and talk to each other?',
+    yes:'Yes! The motherboard is the city where all the parts live.' },
+  { id:'cpu', name:'CPU', the:'the CPU', label:'CPU', colour:'#8b5cf6', tint:'#ece6fe',
+    slot:{ x:90, y:80, w:64, h:64 }, shape:'small square slot',
+    tag:'The brain that does the thinking',
+    job:'The CPU is the brain of the computer. It does all the thinking.',
+    like:'It is like your brain doing maths. But it can do billions of sums every second!',
+    fun:'CPU stands for Central Processing Unit. Some CPUs are smaller than a postage stamp!',
+    hint:'Not quite! The CPU is small and square. Look for a small square slot on the motherboard.',
+    q:'Which part is the brain that does the thinking?',
+    yes:'Yes! The CPU is the brain that does the thinking.' },
+  { id:'ram', name:'RAM', the:'the RAM', label:'RAM', colour:'#3b82f6', tint:'#dde9fe',
+    slot:{ x:182, y:70, w:52, h:150 }, shape:'tall, thin slot',
+    tag:'Short-term memory, like a whiteboard',
+    job:'RAM is short-term memory. It holds what the computer is using right now.',
+    like:'It is like a whiteboard. Great for right now, but it gets wiped clean when you turn the computer off.',
+    fun:'RAM stands for Random Access Memory. More RAM means you can open more apps at once.',
+    hint:'Not quite! RAM is long and thin. Look for a tall, thin slot next to the CPU.',
+    q:'Which part is like a whiteboard that gets wiped when you turn the computer off?',
+    yes:'Yes! RAM is short-term memory, like a whiteboard.' },
+  { id:'ssd', name:'Storage (SSD)', the:'the SSD', label:'SSD', colour:'#f59e0b', tint:'#fef0d4',
+    slot:{ x:284, y:288, w:80, h:54 }, shape:'small, flat slot',
+    tag:'Long-term memory, like a backpack',
+    job:'The SSD is long-term memory. It keeps your files, photos and games.',
+    like:'It is like your school backpack. Your things stay inside, even when the computer is off.',
+    fun:'SSD stands for Solid State Drive. It has no moving parts, so it is fast and quiet.',
+    hint:'Not quite! The SSD is small and flat. Look for the small slot on the right side.',
+    q:'Which part keeps your files safe, like a backpack?',
+    yes:'Yes! The SSD keeps your files safe, like a backpack.' },
+  { id:'psu', name:'Power Supply', the:'the power supply', label:'Power Supply', colour:'#ef4444', tint:'#fde2e2',
+    slot:{ x:36, y:330, w:220, h:92 }, shape:'long box space at the bottom',
+    tag:'The heart that sends power to everything',
+    job:'The power supply is the heart. It sends power to all the other parts.',
+    like:'Your heart pumps blood around your body. The power supply pumps power around the computer.',
+    fun:'It turns the strong power from the wall into gentle power that the parts can use safely.',
+    hint:'Not quite! The power supply is a big box. Look for the long space at the bottom.',
+    q:'Which part is the heart that sends power to everything?',
+    yes:'Yes! The power supply is the heart that sends power.' },
+  { id:'fan', name:'Fan / Cooler', the:'the fan', label:'Fan', colour:'#06b6d4', tint:'#d5f6fb',
+    slot:{ x:282, y:52, w:88, h:88 }, shape:'round slot', round:true,
+    tag:'Keeps the brain from overheating',
+    job:'The fan keeps the CPU cool, so the brain does not overheat.',
+    like:'It is like a fan on a hot summer day. It blows the hot air away.',
+    fun:'A busy CPU can get as hot as a cup of hot chocolate! Fans help keep it cool.',
+    hint:'Not quite! The fan is round. Look for a round slot near the top.',
+    q:'Which part keeps the brain from overheating?',
+    yes:'Yes! The fan keeps the brain cool.' }
+];
+DESKTOP.forEach(p => { p.art = p.id; });
+const D = Object.fromEntries(DESKTOP.map(p => [p.id, p]));
+
+// Laptop: same jobs, smaller and flatter parts, and a battery instead of a power supply.
+const LAPTOP = [
+  { ...D.mobo, art:'lmobo', slot:{ x:36, y:186, w:214, h:150 },
+    fun:'A laptop motherboard is small and thin, so it fits inside the laptop.',
+    hint:'Not quite! The motherboard is the biggest board. Look for the big space on the left.' },
+  { ...D.cpu, slot:{ x:64, y:212, w:52, h:52 },
+    fun:'Laptop CPUs are made to use less power. That helps the battery last longer.' },
+  { ...D.ram, art:'lram', slot:{ x:134, y:210, w:100, h:44 }, shape:'short, flat slot',
+    fun:'Laptop RAM is short and flat, so it fits inside a thin laptop.',
+    hint:'Not quite! Laptop RAM is short and flat. Look for the slot next to the CPU.' },
+  { ...D.ssd, art:'lssd', slot:{ x:262, y:292, w:104, h:34 }, shape:'long, thin slot',
+    fun:'A laptop SSD can be as thin as a stick of chewing gum!',
+    hint:'Not quite! The SSD is a long, thin stick. Look for the thin slot under the fan.' },
+  { id:'battery', art:'battery', name:'Battery', the:'the battery', label:'Battery', colour:'#ef4444', tint:'#fde2e2',
+    slot:{ x:36, y:350, w:328, h:78 }, shape:'long, wide space at the bottom',
+    tag:'Stores power so it works without a plug',
+    job:'The battery stores power. It lets the laptop work without a plug.',
+    like:'It is like your lunchbox. You fill it up at home, then use it later in the day.',
+    fun:'When you plug in the charger, the battery fills back up. That is called charging.',
+    hint:'Not quite! The battery is big, wide and flat. Look for the long space at the bottom.',
+    q:'Which part stores power so the laptop works without a plug?',
+    yes:'Yes! The battery stores power, like a lunchbox.' },
+  { ...D.fan, art:'lfan', slot:{ x:272, y:188, w:84, h:84 },
+    fun:'Laptop fans are small and flat. They blow hot air out of little vents on the side.',
+    hint:'Not quite! The fan is round. Look for the round slot at the top right.' }
+];
+const MACHINES = {
+  desktop:{ parts:DESKTOP, name:'desktop computer', other:'laptop',
+    start:"Hi, I'm Bit! Let's build a desktop computer. Start with the motherboard. Drag it into the case." },
+  laptop:{ parts:LAPTOP, name:'laptop', other:'desktop',
+    start:"Let's build a laptop! The bottom cover is off. Start with the motherboard. Drag it into the laptop." }
+};
+let machine = 'desktop', PARTS = DESKTOP, P = D;
+const MOBO_FIRST = 'The motherboard goes in first! It is the big green board. Then the other spots will show up.';
+const PRAISE = ['Awesome!', 'Great job!', 'You got it!', 'Super!', 'Nice one!', 'Brilliant!'];
+
+/* ---------- Pictures (inline SVG) ---------- */
+const sw = (w) => `stroke="${INK}" stroke-width="${w}"`;
+const ART = {
+  mobo:{ vb:[230,280], d:() => `
+    <rect class="ol" x="3" y="3" width="224" height="274" rx="14" fill="#2fae66"/>
+    <g fill="none" stroke="#1c8a4c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M30 128H62V176H110"/><path d="M40 30V18H150"/><path d="M122 64H160"/><path d="M122 92H160"/>
+      <path d="M86 112V150H150V200"/><path d="M196 30H212V222H184"/><path d="M30 196H120"/>
+    </g>
+    <rect x="8" y="30" width="16" height="74" rx="4" fill="#c3cae0" ${sw(3)}/>
+    <rect x="50" y="40" width="72" height="72" rx="8" fill="#1c8a4c" ${sw(3)}/>
+    ${range(25, i => `<circle cx="${60 + (i % 5) * 13}" cy="${50 + Math.floor(i / 5) * 13}" r="2.2" fill="#8fe0b0"/>`)}
+    <rect x="160" y="36" width="24" height="146" rx="5" fill="#156b3b" ${sw(3)}/>
+    <rect x="166" y="44" width="12" height="130" rx="3" fill="#0f4f2b"/>
+    <rect x="140" y="200" width="44" height="44" rx="7" fill="#3a4466" ${sw(3)}/>
+    <path d="M150 214H174M150 222H174M150 230H174" stroke="#7d87b5" stroke-width="3" stroke-linecap="round"/>
+    <rect x="20" y="212" width="100" height="12" rx="4" fill="#156b3b" ${sw(2.5)}/>
+    <rect x="20" y="238" width="100" height="12" rx="4" fill="#156b3b" ${sw(2.5)}/>
+    ${[[36,146],[50,146],[36,162],[50,162]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5.5" fill="#cfd6ea" ${sw(2)}/>`).join('')}
+    ${[[16,16],[214,16],[16,264],[214,264]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6" fill="#ffd23f" ${sw(2.5)}/>`).join('')}
+    <circle class="led" cx="180" cy="262" r="5" fill="#b6ebcb" ${sw(2)}/>
+    <circle class="led" cx="196" cy="262" r="5" fill="#b6ebcb" ${sw(2)}/>` },
+  cpu:{ vb:[64,64], d:() => `
+    ${[15,25,35,45].map(p => `
+      <rect x="${p - 2.5}" y="1" width="5" height="9" rx="1.5" fill="#f4c542" ${sw(1.4)}/>
+      <rect x="${p - 2.5}" y="54" width="5" height="9" rx="1.5" fill="#f4c542" ${sw(1.4)}/>
+      <rect x="1" y="${p - 2.5}" width="9" height="5" rx="1.5" fill="#f4c542" ${sw(1.4)}/>
+      <rect x="54" y="${p - 2.5}" width="9" height="5" rx="1.5" fill="#f4c542" ${sw(1.4)}/>`).join('')}
+    <rect class="ol" x="7" y="7" width="50" height="50" rx="9" fill="#8b5cf6"/>
+    <path d="M32 19C26 15 18 20 20 27C15 29 16 37 21 38C22 43 28 45 32 41C36 45 42 43 43 38C48 37 49 29 44 27C46 20 38 15 32 19Z" fill="#f9a8d4" ${sw(2.2)} stroke-linejoin="round"/>
+    <path d="M32 20V40M25 26q4 3 0 7M39 26q-4 3 0 7" fill="none" ${sw(1.8)} stroke-linecap="round"/>
+    <path d="M11 53V46L18 53Z" fill="#f4c542"/>` },
+  ram:{ vb:[52,150], d:() => `
+    <rect class="ol" x="9" y="4" width="34" height="142" rx="6" fill="#3b82f6"/>
+    <rect class="rgb" x="13" y="10" width="6" height="130" rx="3" fill="#bfdbfe" ${sw(1.5)}/>
+    ${[14,46,78,110].map(y => `<rect x="24" y="${y}" width="14" height="26" rx="3" fill="#1e3a8a" ${sw(2)}/>`).join('')}` },
+  ssd:{ vb:[80,54], d:() => `
+    <rect class="ol" x="4" y="5" width="72" height="44" rx="8" fill="#f59e0b"/>
+    <rect x="11" y="13" width="44" height="28" rx="5" fill="#fff4d6" ${sw(2.5)}/>
+    <text x="33" y="32" text-anchor="middle" font-size="13" font-weight="900" fill="${INK}" font-family="Arial Rounded MT Bold, Arial, sans-serif">SSD</text>
+    <rect x="61" y="13" width="10" height="20" rx="2" fill="#f4c542" ${sw(2)}/>
+    <circle class="blink" cx="66" cy="41" r="3" fill="#fde68a" ${sw(1.5)}/>` },
+  psu:{ vb:[220,92], d:() => `
+    <rect class="ol" x="4" y="4" width="212" height="84" rx="12" fill="#ef4444"/>
+    <circle cx="52" cy="46" r="32" fill="#b91c1c" ${sw(3)}/>
+    <g class="psuFan">${[0,90,180,270].map(a => `<path transform="rotate(${a} 52 46)" d="M52 46C51 36 56 25 66 23C69 31 63 41 52 46Z" fill="#fca5a5" ${sw(2)} stroke-linejoin="round"/>`).join('')}</g>
+    <g fill="none" ${sw(2)} opacity=".5"><circle cx="52" cy="46" r="20"/><circle cx="52" cy="46" r="27"/></g>
+    <circle cx="52" cy="46" r="6" fill="#ffd23f" ${sw(2.5)}/>
+    <path d="M125 74C95 56 92 34 108 28C117 25 125 32 125 37C125 32 133 25 142 28C158 34 155 56 125 74Z" fill="#ffd23f" ${sw(3)} stroke-linejoin="round"/>
+    <path d="M128 33L117 51H125L121 64L134 45H126L131 33Z" fill="#fff" ${sw(2)} stroke-linejoin="round"/>
+    <rect x="168" y="20" width="34" height="26" rx="5" fill="#3a4466" ${sw(2.5)}/>
+    <rect x="175" y="28" width="4" height="10" rx="1" fill="#fff"/><rect x="183" y="28" width="4" height="10" rx="1" fill="#fff"/><rect x="191" y="28" width="4" height="10" rx="1" fill="#fff"/>
+    <rect x="170" y="56" width="14" height="20" rx="3" fill="${INK}"/><rect x="172" y="58" width="10" height="8" rx="2" fill="#fca5a5"/>
+    <circle class="led" cx="198" cy="66" r="5" fill="#fecaca" ${sw(2)}/>` },
+  fan:{ vb:[100,100], d:() => `
+    <circle class="ol" cx="50" cy="50" r="46" fill="#06b6d4"/>
+    <circle cx="50" cy="50" r="36" fill="#0e7490" ${sw(3)}/>
+    <g class="blades">${[0,72,144,216,288].map(a => `<path transform="rotate(${a} 50 50)" d="M50 50C49 38 55 26 66 24C70 33 64 44 50 50Z" fill="#a5f3fc" ${sw(2.5)} stroke-linejoin="round"/>`).join('')}</g>
+    <circle cx="50" cy="50" r="9" fill="#ffd23f" ${sw(3)}/>
+    ${[[21,21],[79,21],[21,79],[79,79]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.5" fill="${INK}"/>`).join('')}` },
+
+  /* Laptop parts */
+  lmobo:{ vb:[214,150], d:() => `
+    <rect class="ol" x="3" y="3" width="208" height="144" rx="12" fill="#2fae66"/>
+    <g fill="none" stroke="#1c8a4c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M54 82V104H112"/><path d="M84 52H96"/><path d="M150 68V92"/><path d="M20 120H100"/><path d="M184 68V96"/>
+    </g>
+    <path d="M54 22V12H211" fill="none" stroke="#d97706" stroke-width="7" stroke-linecap="round"/>
+    <rect x="24" y="22" width="60" height="60" rx="7" fill="#1c8a4c" ${sw(3)}/>
+    ${range(16, i => `<circle cx="${33 + (i % 4) * 14}" cy="${31 + Math.floor(i / 4) * 14}" r="2.2" fill="#8fe0b0"/>`)}
+    <rect x="96" y="22" width="106" height="46" rx="6" fill="#156b3b" ${sw(3)}/>
+    <rect x="103" y="30" width="92" height="30" rx="3" fill="#0f4f2b"/>
+    <rect x="112" y="92" width="38" height="38" rx="6" fill="#3a4466" ${sw(3)}/>
+    <path d="M120 104H142M120 112H142M120 120H142" stroke="#7d87b5" stroke-width="3" stroke-linecap="round"/>
+    <rect x="166" y="96" width="34" height="16" rx="3" fill="#c3cae0" ${sw(2.5)}/>
+    ${[[12,12],[12,138],[202,138]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#ffd23f" ${sw(2.5)}/>`).join('')}
+    <circle class="led" cx="168" cy="134" r="4.5" fill="#b6ebcb" ${sw(2)}/>
+    <circle class="led" cx="182" cy="134" r="4.5" fill="#b6ebcb" ${sw(2)}/>` },
+  lram:{ vb:[100,44], d:() => `
+    <rect x="8" y="33" width="84" height="8" rx="1.5" fill="#f4c542" ${sw(1.5)}/>
+    <rect class="ol" x="4" y="4" width="92" height="32" rx="5" fill="#3b82f6"/>
+    ${[10,32,54,76].map(x => `<rect x="${x}" y="10" width="15" height="20" rx="3" fill="#1e3a8a" ${sw(2)}/>`).join('')}` },
+  lssd:{ vb:[104,34], d:() => `
+    <rect x="2" y="9" width="8" height="16" rx="1.5" fill="#f4c542" ${sw(1.5)}/>
+    <rect class="ol" x="7" y="5" width="93" height="24" rx="4" fill="#f59e0b"/>
+    <rect x="17" y="10" width="24" height="14" rx="2.5" fill="${INK}"/>
+    <rect x="47" y="9" width="34" height="16" rx="3" fill="#fff4d6" ${sw(2)}/>
+    <text x="64" y="21" text-anchor="middle" font-size="10" font-weight="900" fill="${INK}" font-family="Arial Rounded MT Bold, Arial, sans-serif">SSD</text>
+    <circle class="blink" cx="90" cy="17" r="2.8" fill="#fde68a" ${sw(1.2)}/>` },
+  battery:{ vb:[328,78], d:() => `
+    <rect class="ol" x="4" y="4" width="320" height="70" rx="12" fill="#ef4444"/>
+    ${[16,80,144].map(x => `<rect x="${x}" y="14" width="56" height="50" rx="10" fill="#f87171" ${sw(2.5)}/>` +
+      `<path d="M${x + 28} 31v16M${x + 20} 39h16" stroke="#fff" stroke-width="4" stroke-linecap="round"/>`).join('')}
+    <rect x="220" y="22" width="78" height="34" rx="7" fill="#fff" ${sw(3)}/>
+    <rect x="298" y="31" width="9" height="16" rx="2" fill="${INK}"/>
+    <rect class="charge" x="226" y="28" width="30" height="22" rx="3" fill="#fbbf24"/>
+    <path d="M276 26L264 41H272L268 53L282 37H274L278 26Z" fill="#ffd23f" ${sw(2)} stroke-linejoin="round"/>` },
+  lfan:{ vb:[100,100], d:() => `
+    <circle class="ol" cx="50" cy="50" r="46" fill="#06b6d4"/>
+    <circle cx="50" cy="50" r="37" fill="#0e7490" ${sw(3)}/>
+    <g class="blades">${range(10, i => `<path transform="rotate(${i * 36} 50 50)" d="M50 21Q61 25 63 36" fill="none" stroke="#a5f3fc" stroke-width="6" stroke-linecap="round"/>`)}</g>
+    <circle cx="50" cy="50" r="15" fill="#ffd23f" ${sw(3)}/>
+    <circle cx="50" cy="50" r="5" fill="${INK}"/>
+    ${[[21,21],[79,21],[50,91]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.5" fill="${INK}"/>`).join('')}` }
+};
+for (const k in ART) ART[k].html = ART[k].d();
+const artSvg = (key) => `<svg class="partsvg" viewBox="0 0 ${ART[key].vb[0]} ${ART[key].vb[1]}" aria-hidden="true" focusable="false">${ART[key].html}</svg>`;
+const svgFor = (id) => artSvg(P[id].art);
+
+const ICON = {
+  check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  soundOn:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M16 8.5a5 5 0 0 1 0 7M18.6 6a8.6 8.6 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>',
+  soundOff:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>',
+  speak:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M16 8.5a5 5 0 0 1 0 7M18.6 6a8.6 8.6 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>',
+  stop:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/></svg>',
+  chip:'<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="9" y="9" width="30" height="30" rx="7" fill="#8b5cf6" stroke="#fff" stroke-width="3"/><rect x="17" y="17" width="14" height="14" rx="3" fill="#ffd23f"/><path d="M17 3v6M24 3v6M31 3v6M17 39v6M24 39v6M31 39v6M3 17h6M3 24h6M3 31h6M39 17h6M39 24h6M39 31h6" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>',
+  smile:'<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="#ffd23f" stroke="#fff" stroke-width="3"/><circle cx="23" cy="26" r="4" fill="#1f2547"/><circle cx="41" cy="26" r="4" fill="#1f2547"/><path d="M19 38q13 13 26 0" fill="none" stroke="#1f2547" stroke-width="4" stroke-linecap="round"/></svg>',
+  star:'M12 2.2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.1l-6.1 3.5 1.5-6.8L2.2 9.2l6.9-.7z'
+};
+
+/* ---------- Sound (Web Audio, off by default) ---------- */
+const Sound = {
+  on:false, ctx:null,
+  ensure() {
+    if (!this.ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      try { this.ctx = new AC(); } catch (e) { return null; }
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    return this.ctx;
+  },
+  tone(freq, dur, opts = {}) {
+    const ctx = this.ensure(); if (!ctx) return;
+    const { type = 'sine', delay = 0, vol = 0.16, to = null } = opts;
+    const t = ctx.currentTime + delay;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t); o.stop(t + dur + 0.05);
+  },
+  play(name) {
+    if (!this.on) return;
+    switch (name) {
+      case 'pick':  this.tone(520, .08, { type:'triangle' }); break;
+      case 'snap':  this.tone(660, .1, { type:'triangle' }); this.tone(990, .16, { type:'triangle', delay:.08 }); break;
+      case 'oops':  this.tone(330, .15); this.tone(262, .24, { delay:.12 }); break;
+      case 'pop':   this.tone(700, .1, { to:1200 }); break;
+      case 'power': this.tone(140, .9, { type:'sawtooth', to:620, vol:.07 }); break;
+      case 'yay':   [523, 659, 784, 1047].forEach((f, i) => this.tone(f, .24, { type:'triangle', delay:i * .11 })); break;
+      case 'right': this.tone(784, .1, { type:'triangle' }); this.tone(1175, .18, { type:'triangle', delay:.09 }); break;
+    }
+  }
+};
+
+/* ---------- Read aloud (speechSynthesis, en-AU if available) ---------- */
+const Speech = {
+  ok:'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window,
+  voice:null,
+  pick() {
+    const vs = window.speechSynthesis.getVoices() || [];
+    this.voice = vs.find(v => /en[-_]AU/i.test(v.lang)) || vs.find(v => /en[-_]GB/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || null;
+  },
+  say(text, onEnd) {
+    if (!this.ok) return;
+    window.speechSynthesis.cancel();
+    if (!this.voice) this.pick();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-AU';
+    if (this.voice) u.voice = this.voice;
+    u.rate = 0.9; u.pitch = 1.05;
+    u.onend = u.onerror = () => onEnd && onEnd();
+    window.speechSynthesis.speak(u);
+  },
+  stop() { if (this.ok) window.speechSynthesis.cancel(); }
+};
+if (Speech.ok) {
+  Speech.pick();
+  try { window.speechSynthesis.addEventListener('voiceschanged', () => Speech.pick()); }
+  catch (e) { window.speechSynthesis.onvoiceschanged = () => Speech.pick(); }
+}
+
+/* ---------- Elements + state ---------- */
+const $ = (s) => document.querySelector(s);
+const buildView = $('#buildView'), finishView = $('#finishView'), quizView = $('#quizView');
+const tray = $('#tray'), trayHint = $('#trayHint'), slotsWrap = $('#slots'), pcCase = $('#pcCase');
+const helper = $('#helper'), helperText = $('#helperText');
+const countText = $('#countText'), progressBar = $('#progressBar'), progressEl = $('.progress');
+const powerPanel = $('#powerPanel'), powerBtn = $('#powerBtn'), nameInput = $('#nameInput');
+const monitorPanel = $('#monitorPanel'), screenEl = $('#screen'), toFinishBtn = $('#toFinishBtn');
+const monitorEl = $('#monitorEl'), lookTip = $('#lookTip'), lidScreen = $('#lidScreen');
+const factCard = $('#factCard'), readBtn = $('#readBtn');
+const teacherCard = $('#teacherCard');
+
+const state = { placed:new Set(), selected:null, drag:null, busy:false, powered:false };
+
+const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+const tileFor = (id) => tray.querySelector(`.tile[data-part="${id}"]`);
+const slotFor = (id) => slotsWrap.querySelector(`.slot[data-part="${id}"]`);
+
+function setHelper(text, mood) {
+  helperText.textContent = text;
+  helper.classList.remove('happy', 'oops', 'think', 'nudge');
+  void helper.offsetWidth; // restart the nudge animation
+  if (mood) helper.classList.add(mood);
+  helper.classList.add('nudge');
+}
+function shake(el) {
+  if (!el) return;
+  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  setTimeout(() => el.classList.remove('shake'), 500);
+}
+
+/* ---------- Dialog helpers ---------- */
+function openDialog(d) {
+  if (typeof d.showModal === 'function') { if (!d.open) d.showModal(); }
+  else d.setAttribute('open', '');
+}
+function closeDialog(d) {
+  if (typeof d.close === 'function') { if (d.open) d.close(); }
+  else { d.removeAttribute('open'); d.dispatchEvent(new Event('close')); }
+}
+
+/* ---------- Build: tray + slots ---------- */
+function buildTray() {
+  tray.innerHTML = '';
+  const order = [PARTS[0], ...shuffle(PARTS.slice(1))];
+  for (const p of order) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tile';
+    b.dataset.part = p.id;
+    b.style.setProperty('--c', p.colour);
+    b.style.setProperty('--t', p.tint);
+    b.setAttribute('aria-pressed', 'false');
+    b.setAttribute('aria-label', `${p.name}. Drag it into the case, or press it and then press a slot.`);
+    b.innerHTML = `<span class="art">${svgFor(p.id)}</span><span class="tname">${p.name}</span>` +
+      (p.id === 'mobo' ? '<span class="badge" aria-hidden="true">Start here!</span>' : '') +
+      `<span class="tick" aria-hidden="true">${ICON.check}</span>`;
+    tray.appendChild(b);
+  }
+}
+function buildSlots() {
+  slotsWrap.innerHTML = '';
+  for (const p of PARTS) {
+    const s = document.createElement('button');
+    const { x, y, w, h } = p.slot;
+    s.type = 'button';
+    s.className = `slot slot-${p.id}` + (p.round ? ' round' : '');
+    s.dataset.part = p.id;
+    s.style.left = (x / 400 * 100) + '%';
+    s.style.top = (y / 460 * 100) + '%';
+    s.style.width = (w / 400 * 100) + '%';
+    s.style.height = (h / 460 * 100) + '%';
+    s.innerHTML = `<span class="slotLabel">${p.label}</span>`;
+    if (p.id !== 'mobo') s.hidden = true;
+    slotsWrap.appendChild(s);
+  }
+  updateSlotLabels();
+}
+function updateSlotLabels() {
+  const challenge = document.body.classList.contains('challenge');
+  for (const p of PARTS) {
+    const s = slotFor(p.id);
+    if (!s || s.classList.contains('filled')) continue;
+    s.setAttribute('aria-label', challenge ? `Empty spot: ${p.shape}` : `Empty spot for ${p.the}`);
+  }
+}
+function revealSlots() {
+  let k = 0;
+  for (const p of PARTS) {
+    if (p.id === 'mobo') continue;
+    const s = slotFor(p.id);
+    s.hidden = false;
+    s.style.animationDelay = (k++ * 90) + 'ms';
+    s.classList.add('appear');
+    setTimeout(() => { s.classList.remove('appear'); s.style.animationDelay = ''; }, 1000);
+  }
+}
+function updateProgress() {
+  const n = state.placed.size;
+  countText.textContent = `${n} of ${PARTS.length} parts in`;
+  progressBar.style.width = (n / PARTS.length * 100) + '%';
+  progressEl.setAttribute('aria-valuenow', String(n));
+}
+
+/* ---------- Geometry helpers ---------- */
+// Where the part picture is actually drawn inside a box (SVG "meet" fitting).
+function fitRect(r, id) {
+  const [vw, vh] = ART[P[id].art].vb, a = vw / vh;
+  let w = r.width, h = r.height;
+  if (w / h > a) w = h * a; else h = w / a;
+  return { left:r.left + (r.width - w) / 2, top:r.top + (r.height - h) / 2, width:w, height:h };
+}
+const artRect = (id) => fitRect(tileFor(id).querySelector('.art').getBoundingClientRect(), id);
+function slotsAt(x, y) {
+  const out = [];
+  for (const s of slotsWrap.children) {
+    if (s.hidden || s.classList.contains('filled')) continue;
+    const r = s.getBoundingClientRect(), pad = 14;
+    if (x >= r.left - pad && x <= r.right + pad && y >= r.top - pad && y <= r.bottom + pad) out.push(s);
+  }
+  return out;
+}
+const area = (s) => { const r = s.getBoundingClientRect(); return r.width * r.height; };
+const smallest = (list) => list.slice().sort((a, b) => area(a) - area(b))[0] || null;
+function inCase(x, y) {
+  const r = pcCase.getBoundingClientRect();
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
+/* ---------- Ghost (the part that follows your finger) ---------- */
+function setGhost(g, x, y, w, h, rot) {
+  Object.assign(g, { _x:x, _y:y, _w:w, _h:h, _rot:rot });
+  g.style.width = w + 'px';
+  g.style.height = h + 'px';
+  g.style.transform = `translate(${x}px,${y}px) rotate(${rot}deg)`;
+}
+function makeGhost(id, r) {
+  const g = document.createElement('div');
+  g.className = 'ghost';
+  g.innerHTML = svgFor(id);
+  setGhost(g, r.left, r.top, r.width, r.height, 0);
+  document.body.appendChild(g);
+  return g;
+}
+function flyGhost(g, r, dur) {
+  const finish = () => setGhost(g, r.left, r.top, r.width, r.height, 0);
+  if (rm() || typeof g.animate !== 'function') { finish(); return Promise.resolve(); }
+  const anim = g.animate([
+    { transform:`translate(${g._x}px,${g._y}px) rotate(${g._rot}deg)`, width:g._w + 'px', height:g._h + 'px' },
+    { transform:`translate(${r.left}px,${r.top}px) rotate(0deg)`, width:r.width + 'px', height:r.height + 'px' }
+  ], { duration:dur, easing:'cubic-bezier(.25,.8,.35,1)', fill:'forwards' });
+  return new Promise(res => {
+    anim.onfinish = () => { finish(); res(); };
+    anim.oncancel = () => { finish(); res(); };
+  });
+}
+
+/* ---------- Selecting (tap-to-select fallback) ---------- */
+function clearSelection() {
+  if (state.selected) {
+    const t = tileFor(state.selected);
+    if (t) { t.classList.remove('selected'); t.setAttribute('aria-pressed', 'false'); }
+  }
+  state.selected = null;
+  document.body.classList.remove('picking');
+}
+function toggleSelect(id) {
+  if (state.busy || state.placed.has(id)) return;
+  if (state.selected === id) {
+    clearSelection();
+    setHelper('Okay! Pick any part when you are ready.', 'think');
+    return;
+  }
+  clearSelection();
+  state.selected = id;
+  const t = tileFor(id);
+  t.classList.add('selected');
+  t.setAttribute('aria-pressed', 'true');
+  document.body.classList.add('picking');
+  Sound.play('pick');
+  setHelper(`You picked ${P[id].the}. Now tap the spot in the case where it goes.`, 'think');
+}
+
+/* ---------- Dragging with Pointer Events ---------- */
+tray.addEventListener('pointerdown', (e) => {
+  const tile = e.target.closest('.tile');
+  if (!tile || tile.disabled || state.busy || state.drag) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  try { tile.setPointerCapture(e.pointerId); } catch (err) { /* synthetic or already-released pointer */ }
+  state.drag = { tile, id:tile.dataset.part, pid:e.pointerId, sx:e.clientX, sy:e.clientY, moved:false, ghost:null };
+});
+
+function beginDrag(d) {
+  d.moved = true;
+  const r = artRect(d.id);
+  const w = r.width * 1.15, h = r.height * 1.15;
+  const fx = Math.min(1, Math.max(0, (d.sx - r.left) / r.width));
+  const fy = Math.min(1, Math.max(0, (d.sy - r.top) / r.height));
+  Object.assign(d, { w, h, ox:w * fx, oy:h * fy });
+  clearSelection();
+  d.ghost = makeGhost(d.id, { left:d.sx - d.ox, top:d.sy - d.oy, width:w, height:h });
+  d.tile.classList.add('lifted');
+  document.body.classList.add('dragging');
+  Sound.play('pick');
+}
+function clearHot() { for (const s of slotsWrap.querySelectorAll('.slot.hot')) s.classList.remove('hot'); }
+function dropCandidates(d, x, y) {
+  const cx = d.ghost._x + d.w / 2, cy = d.ghost._y + d.h / 2;
+  return { list:[...new Set([...slotsAt(x, y), ...slotsAt(cx, cy)])], cx, cy };
+}
+
+window.addEventListener('pointermove', (e) => {
+  const d = state.drag;
+  if (!d || e.pointerId !== d.pid) return;
+  if (!d.moved) {
+    if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 8) return;
+    beginDrag(d);
+  }
+  e.preventDefault();
+  setGhost(d.ghost, e.clientX - d.ox, e.clientY - d.oy, d.w, d.h, -4);
+  const { list } = dropCandidates(d, e.clientX, e.clientY);
+  const hot = list.find(s => s.dataset.part === d.id) || smallest(list);
+  for (const s of slotsWrap.children) s.classList.toggle('hot', s === hot);
+  // Gentle auto-scroll when the case is below the fold (stacked layout).
+  const edge = 50;
+  if (e.clientY > window.innerHeight - edge) window.scrollBy(0, 14);
+  else if (e.clientY < edge) window.scrollBy(0, -14);
+}, { passive:false });
+
+function endPointer(e, cancelled) {
+  const d = state.drag;
+  if (!d || e.pointerId !== d.pid) return;
+  state.drag = null;
+  d.tile._skipClickUntil = performance.now() + 600; // the click that follows is already handled here
+  if (!d.moved) { if (!cancelled) toggleSelect(d.id); return; }
+  document.body.classList.remove('dragging');
+  clearHot();
+  if (cancelled) { sendBack(d.id, d.ghost, false); return; }
+  const { list, cx, cy } = dropCandidates(d, e.clientX, e.clientY);
+  if (list.some(s => s.dataset.part === d.id)) { place(d.id, d.ghost); return; }
+  if (list.length || inCase(e.clientX, e.clientY) || inCase(cx, cy)) { wrongDrop(d.id, d.ghost, smallest(list)); return; }
+  sendBack(d.id, d.ghost, false); // dropped away from the case: just float home
+}
+window.addEventListener('pointerup', (e) => endPointer(e, false));
+window.addEventListener('pointercancel', (e) => endPointer(e, true));
+
+// Keyboard (Enter/Space) and any click not already handled by pointerup.
+tray.addEventListener('click', (e) => {
+  const t = e.target.closest('.tile');
+  if (!t || t.disabled) return;
+  if (performance.now() < (t._skipClickUntil || 0)) return;
+  toggleSelect(t.dataset.part);
+});
+slotsWrap.addEventListener('click', (e) => {
+  const s = e.target.closest('.slot');
+  if (s && !s.disabled) onSlotTap(s);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && state.selected && !factCard.open && !teacherCard.open) {
+    clearSelection();
+    setHelper('Okay! Pick any part when you are ready.', 'think');
+  }
+});
+
+const hintFor = (id) => (!state.placed.has('mobo') && id !== 'mobo') ? MOBO_FIRST : P[id].hint;
+
+function onSlotTap(slot) {
+  if (state.busy) return;
+  const id = state.selected;
+  if (!id) {
+    setHelper('First tap a part in the tray. Then tap its spot in the case.', 'think');
+    shake(slot);
+    return;
+  }
+  if (slot.dataset.part === id) {
+    const g = makeGhost(id, artRect(id));
+    tileFor(id).classList.add('lifted');
+    place(id, g);
+  } else {
+    Sound.play('oops');
+    setHelper(hintFor(id), 'oops');
+    shake(slot);
+    shake(tileFor(id));
+  }
+}
+
+function sendBack(id, g, oops) {
+  state.busy = true;
+  const tile = tileFor(id);
+  return flyGhost(g, artRect(id), oops ? 450 : 300).then(() => {
+    g.remove();
+    tile.classList.remove('lifted');
+    if (oops) shake(tile);
+    state.busy = false;
+  });
+}
+function wrongDrop(id, g, slot) {
+  Sound.play('oops');
+  setHelper(hintFor(id), 'oops');
+  if (slot) shake(slot);
+  sendBack(id, g, true);
+}
+
+function place(id, g) {
+  state.busy = true;
+  const p = P[id], tile = tileFor(id), slot = slotFor(id);
+  state.placed.add(id);
+  clearSelection();
+  tile.classList.remove('selected');
+  tile.classList.add('placed');
+  tile.disabled = true;
+  tile.setAttribute('aria-label', `${p.name}, in the case`);
+  flyGhost(g, fitRect(slot.getBoundingClientRect(), id), 280).then(() => {
+    g.remove();
+    tile.classList.remove('lifted');
+    slot.classList.remove('hot');
+    slot.classList.add('filled');
+    slot.disabled = true;
+    slot.innerHTML = svgFor(id);
+    slot.setAttribute('aria-label', `${p.name}, in place`);
+    Sound.play('snap');
+    updateProgress();
+    setTimeout(() => { state.busy = false; openFact(id, () => afterPlaced(id)); }, rm() ? 80 : 520);
+  });
+}
+
+function afterPlaced(id) {
+  const n = state.placed.size, left = PARTS.length - n;
+  if (n === PARTS.length) { showPower(); return; }
+  if (id === 'mobo') {
+    revealSlots();
+    setHelper('Great job! Now you can see more spots. Put the other parts in.', 'happy');
+  } else {
+    setHelper(`${pick(PRAISE)} ${left} more ${left === 1 ? 'part' : 'parts'} to go.`, 'happy');
+  }
+  const next = tray.querySelector('.tile:not(.placed)');
+  if (next) next.focus({ preventScroll:true });
+}
+
+/* ---------- Fact card ---------- */
+let factCallback = null, factText = '';
+function setReadBtn(on) {
+  readBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  readBtn.innerHTML = on ? `${ICON.stop} Stop` : `${ICON.speak} Read aloud`;
+}
+function openFact(id, cb) {
+  const p = P[id];
+  factCallback = cb || null;
+  factCard.style.setProperty('--c', p.colour);
+  factCard.style.setProperty('--t', p.tint);
+  $('#factArt').innerHTML = svgFor(id);
+  $('#factKicker').textContent = cb ? `Part ${state.placed.size} of ${PARTS.length} is in!` : 'Computer part';
+  $('#factTitle').textContent = p.name;
+  $('#factJob').textContent = p.job;
+  $('#factLike').textContent = p.like;
+  $('#factFun').textContent = p.fun;
+  factText = `${p.name}. ${p.job} It's like this. ${p.like} Fun fact! ${p.fun}`;
+  setReadBtn(false);
+  openDialog(factCard);
+  Sound.play('pop');
+  $('#gotItBtn').focus();
+}
+readBtn.addEventListener('click', () => {
+  if (readBtn.getAttribute('aria-pressed') === 'true') { Speech.stop(); setReadBtn(false); return; }
+  setReadBtn(true);
+  Speech.say(factText, () => setReadBtn(false));
+});
+$('#gotItBtn').addEventListener('click', () => closeDialog(factCard));
+factCard.addEventListener('close', () => {
+  Speech.stop();
+  const cb = factCallback;
+  factCallback = null;
+  if (cb) cb();
+});
+
+/* ---------- Power on ---------- */
+function showPower() {
+  tray.hidden = true;
+  trayHint.hidden = true;
+  powerPanel.hidden = false;
+  setHelper('You did it! All 6 parts are in. Type your name if you like. Then press the big red power button!', 'happy');
+  powerPanel.scrollIntoView({ block:'nearest', behavior:rm() ? 'auto' : 'smooth' });
+  powerBtn.focus({ preventScroll:true });
+}
+powerBtn.addEventListener('click', () => {
+  if (state.powered) return;
+  state.powered = true;
+  const name = nameInput.value.trim().replace(/\s+/g, ' ').slice(0, 20);
+  Sound.play('power');
+  pcCase.classList.add('powered');
+  powerPanel.hidden = true;
+  monitorPanel.hidden = false;
+  toFinishBtn.hidden = true;
+  // A laptop shows the greeting on its own lid screen; a desktop uses the monitor.
+  const laptop = machine === 'laptop';
+  const scr = laptop ? lidScreen : screenEl;
+  monitorEl.hidden = laptop;
+  lookTip.hidden = !laptop;
+  lidScreen.hidden = !laptop;
+  scr.innerHTML = `<div class="boot">${ICON.chip}<p>Starting up…</p><div class="bar"><i></i></div></div>`;
+  setHelper('Whirr! The fan is spinning and the lights are on…', 'happy');
+  setTimeout(() => {
+    if (!state.powered) return; // "Build again" was pressed meanwhile
+    scr.innerHTML = `<div class="hello">${ICON.smile}<p class="hi">Hello, <span></span>!</p><p>Your ${laptop ? 'laptop' : 'computer'} works!</p></div>`;
+    scr.querySelector('.hi span').textContent = name || 'friend';
+    Sound.play('yay');
+    confetti();
+    const what = MACHINES[machine].name;
+    setHelper(name ? `Woohoo, ${name}! You built a working ${what}!` : `Woohoo! You built a working ${what}!`, 'happy');
+    toFinishBtn.hidden = false;
+    toFinishBtn.focus({ preventScroll:true });
+  }, rm() ? 300 : 2000);
+});
+toFinishBtn.addEventListener('click', showFinish);
+
+/* ---------- Views ---------- */
+function showView(v) {
+  buildView.hidden = v !== 'build';
+  finishView.hidden = v !== 'finish';
+  quizView.hidden = v !== 'quiz';
+  window.scrollTo(0, 0);
+}
+function resetBuild() {
+  Speech.stop();
+  clearSelection();
+  state.placed.clear();
+  state.powered = false;
+  state.busy = false;
+  pcCase.classList.remove('powered');
+  pcCase.classList.toggle('laptop', machine === 'laptop');
+  $('.shell-desktop').hidden = machine !== 'desktop';
+  $('.shell-laptop').hidden = machine !== 'laptop';
+  pcCase.parentElement.setAttribute('aria-label', machine === 'laptop' ? 'Laptop with the bottom cover off' : 'Computer case');
+  lidScreen.hidden = true;
+  lidScreen.innerHTML = '';
+  $('#pickDesktop').setAttribute('aria-pressed', machine === 'desktop' ? 'true' : 'false');
+  $('#pickLaptop').setAttribute('aria-pressed', machine === 'laptop' ? 'true' : 'false');
+  buildTray();
+  buildSlots();
+  updateProgress();
+  tray.hidden = false;
+  trayHint.hidden = false;
+  powerPanel.hidden = true;
+  monitorPanel.hidden = true;
+  setHelper(MACHINES[machine].start, '');
+  showView('build');
+}
+function setMachine(m) {
+  if (state.busy || state.drag) return;
+  machine = m;
+  PARTS = MACHINES[m].parts;
+  P = Object.fromEntries(PARTS.map(p => [p.id, p]));
+  resetBuild();
+}
+$('#pickDesktop').addEventListener('click', () => setMachine('desktop'));
+$('#pickLaptop').addEventListener('click', () => setMachine('laptop'));
+$('#otherBtn').addEventListener('click', () => setMachine(MACHINES[machine].other));
+function showFinish() {
+  $('#finishTitle').textContent = `You built a ${MACHINES[machine].name}!`;
+  $('#otherBtn').textContent = MACHINES[machine].other === 'laptop' ? 'Build a laptop' : 'Build a desktop';
+  const grid = $('#finishGrid');
+  grid.innerHTML = PARTS.map(p => `<button type="button" class="fcard" data-part="${p.id}" style="--c:${p.colour};--t:${p.tint}">` +
+    `<span class="art">${svgFor(p.id)}</span><strong>${p.name}</strong><span class="tag">${p.tag}</span></button>`).join('');
+  showView('finish');
+  $('#finishTitle').focus({ preventScroll:true });
+}
+$('#finishGrid').addEventListener('click', (e) => {
+  const b = e.target.closest('.fcard');
+  if (b) openFact(b.dataset.part, null);
+});
+$('#againBtn').addEventListener('click', resetBuild);
+$('#quizBtn').addEventListener('click', startQuiz);
+
+/* ---------- Quiz ---------- */
+let quiz = null;
+const qRead = $('#qRead');
+function startQuiz() {
+  quiz = {
+    i:0, first:0,
+    qs:shuffle(PARTS).map(p => ({
+      answer:p.id,
+      options:shuffle([p.id, ...shuffle(PARTS.filter(o => o.id !== p.id)).slice(0, 2).map(o => o.id)])
+    }))
+  };
+  $('#quizCard').hidden = false;
+  $('#results').hidden = true;
+  showView('quiz');
+  renderQuestion();
+}
+function renderQuestion() {
+  const q = quiz.qs[quiz.i], total = quiz.qs.length;
+  quiz.tried = false;
+  quiz.done = false;
+  Speech.stop();
+  setSpeak(false);
+  $('#qCount').textContent = `Question ${quiz.i + 1} of ${total}`;
+  $('#qDots').innerHTML = range(total, i => `<i class="${i < quiz.i ? 'done' : i === quiz.i ? 'now' : ''}"></i>`);
+  $('#qText').textContent = P[q.answer].q;
+  const fb = $('#qFeedback');
+  fb.textContent = '';
+  fb.className = 'feedback';
+  $('#nextQ').hidden = true;
+  $('#answers').innerHTML = q.options.map(id =>
+    `<button type="button" class="ans" data-part="${id}" aria-label="${P[id].name}"><span class="art">${svgFor(id)}</span><span class="aname">${P[id].name}</span></button>`).join('');
+  $('#qText').focus({ preventScroll:true });
+}
+$('#answers').addEventListener('click', (e) => {
+  const b = e.target.closest('.ans');
+  if (!b || b.disabled || !quiz || quiz.done) return;
+  const q = quiz.qs[quiz.i], id = b.dataset.part, fb = $('#qFeedback');
+  if (id === q.answer) {
+    quiz.done = true;
+    if (!quiz.tried) quiz.first++;
+    b.classList.add('right');
+    for (const o of $('#answers').children) o.disabled = true;
+    Sound.play('right');
+    fb.textContent = P[id].yes;
+    fb.className = 'feedback good';
+    const last = quiz.i === quiz.qs.length - 1;
+    const next = $('#nextQ');
+    next.textContent = last ? 'See my stars' : 'Next question';
+    next.hidden = false;
+    next.focus({ preventScroll:true });
+  } else {
+    quiz.tried = true;
+    b.classList.add('nope');
+    shake(b);
+    b.disabled = true;
+    Sound.play('oops');
+    fb.textContent = `Not quite. That one is ${P[id].the}. Try again!`;
+    fb.className = 'feedback try';
+  }
+});
+$('#nextQ').addEventListener('click', () => {
+  if (quiz.i < quiz.qs.length - 1) { quiz.i++; renderQuestion(); }
+  else showResults();
+});
+function setSpeak(on) {
+  qRead.setAttribute('aria-pressed', on ? 'true' : 'false');
+  qRead.innerHTML = on ? ICON.stop : ICON.speak;
+}
+qRead.addEventListener('click', () => {
+  if (qRead.getAttribute('aria-pressed') === 'true') { Speech.stop(); setSpeak(false); return; }
+  const q = quiz.qs[quiz.i];
+  const names = q.options.map(id => P[id].the);
+  setSpeak(true);
+  Speech.say(`${P[q.answer].q} Is it ${names[0]}, ${names[1]}, or ${names[2]}?`, () => setSpeak(false));
+});
+function showResults() {
+  Speech.stop();
+  const total = quiz.qs.length, n = quiz.first;
+  const stars = n === total ? 3 : n >= total - 2 ? 2 : 1;
+  $('#quizCard').hidden = true;
+  $('#results').hidden = false;
+  const starsEl = $('#stars');
+  starsEl.innerHTML = range(3, i => `<svg viewBox="0 0 24 24" class="${i < stars ? 'on' : 'off'}" style="animation-delay:${i * 180}ms" aria-hidden="true"><path d="${ICON.star}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/></svg>`);
+  starsEl.setAttribute('aria-label', `${stars} out of 3 stars`);
+  $('#resultTitle').textContent = ['Good try!', 'Great work!', 'Superstar!'][stars - 1];
+  $('#resultText').textContent = `You got ${n} out of ${total} right on the first try. ` +
+    ['Build the computer again to learn more.', 'You know lots of computer parts.', 'You know all your computer parts!'][stars - 1];
+  Sound.play('yay');
+  if (stars === 3) confetti();
+  $('#resultTitle').focus({ preventScroll:true });
+}
+$('#quizAgainBtn').addEventListener('click', startQuiz);
+$('#buildAgainBtn').addEventListener('click', resetBuild);
+
+/* ---------- Confetti ---------- */
+const confettiCanvas = $('#confetti');
+let confettiRun = 0;
+function confetti() {
+  if (rm() || !confettiCanvas.getContext) return;
+  const run = ++confettiRun;
+  const ctx = confettiCanvas.getContext('2d');
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = window.innerWidth, H = window.innerHeight;
+  confettiCanvas.width = W * dpr;
+  confettiCanvas.height = H * dpr;
+  confettiCanvas.style.display = 'block';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const cols = [...PARTS.map(p => p.colour), '#ffd23f', '#f472b6'];
+  const bits = Array.from({ length:160 }, (_, i) => ({
+    x:Math.random() * W, y:-20 - Math.random() * H * .5,
+    vx:(Math.random() - .5) * 3, vy:2 + Math.random() * 4,
+    r:Math.random() * Math.PI, vr:(Math.random() - .5) * .25,
+    w:8 + Math.random() * 8, h:5 + Math.random() * 6,
+    c:cols[i % cols.length], round:Math.random() < .3
+  }));
+  const start = performance.now();
+  function frame(t) {
+    if (run !== confettiRun) return;
+    const age = t - start;
+    ctx.clearRect(0, 0, W, H);
+    for (const b of bits) {
+      b.vy += .06; b.x += b.vx + Math.sin((t / 400) + b.r) * .6; b.y += b.vy; b.r += b.vr;
+      ctx.save();
+      ctx.globalAlpha = age > 3200 ? Math.max(0, 1 - (age - 3200) / 600) : 1;
+      ctx.translate(b.x, b.y); ctx.rotate(b.r);
+      ctx.fillStyle = b.c;
+      if (b.round) { ctx.beginPath(); ctx.arc(0, 0, b.h / 1.4, 0, Math.PI * 2); ctx.fill(); }
+      else ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+      ctx.restore();
+    }
+    if (age < 3800) requestAnimationFrame(frame);
+    else { ctx.clearRect(0, 0, W, H); confettiCanvas.style.display = 'none'; }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- Header controls ---------- */
+function setMode(challenge) {
+  document.body.classList.toggle('challenge', challenge);
+  $('#modeEasy').setAttribute('aria-pressed', challenge ? 'false' : 'true');
+  $('#modeChallenge').setAttribute('aria-pressed', challenge ? 'true' : 'false');
+  updateSlotLabels();
+  if (!buildView.hidden && !state.powered) {
+    setHelper(challenge ? 'Challenge mode! The names are hidden. Look at the shapes of the spots.' : 'Easy mode! The spots show their names.', 'think');
+  }
+}
+$('#modeEasy').addEventListener('click', () => setMode(false));
+$('#modeChallenge').addEventListener('click', () => setMode(true));
+
+const soundBtn = $('#soundBtn');
+function renderSound() {
+  soundBtn.setAttribute('aria-pressed', Sound.on ? 'true' : 'false');
+  soundBtn.innerHTML = (Sound.on ? ICON.soundOn : ICON.soundOff) + `<span>${Sound.on ? 'Sound on' : 'Sound off'}</span>`;
+}
+soundBtn.addEventListener('click', () => {
+  Sound.on = !Sound.on;
+  renderSound();
+  Sound.play('pop');
+});
+
+$('#teacherBtn').addEventListener('click', () => openDialog(teacherCard));
+$('#teacherClose').addEventListener('click', () => closeDialog(teacherCard));
+
+/* ---------- Start ---------- */
+if (!Speech.ok) { readBtn.hidden = true; qRead.hidden = true; }
+renderSound();
+resetBuild();
+})();
+</script>
+</body>
+</html>

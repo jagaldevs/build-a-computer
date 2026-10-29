@@ -1,0 +1,8 @@
+[build]
+  publish = "."
+
+# Serve the game at the site root as well as at /build-a-computer.html
+[[redirects]]
+  from = "/"
+  to = "/build-a-computer.html"
+  status = 200
